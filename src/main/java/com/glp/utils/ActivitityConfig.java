@@ -2,13 +2,20 @@ package com.glp.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.*;
+import org.activiti.engine.delegate.DelegateTask;
+import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.repository.Deployment;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.xml.ws.WebEndpoint;
+import java.lang.reflect.MalformedParameterizedTypeException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -16,12 +23,21 @@ import java.util.zip.ZipInputStream;
  * @date 2019/11/1
  */
 @Slf4j
-
+@Configuration
 public class ActivitityConfig {
 
-    private ProcessEngine processEngine;
 
-
+//    @Bean("startNodeTaskOnCreateListener")
+//    public TaskListener getTaskListenner(){
+//
+//        return new TaskListener() {
+//            @Override
+//            public void notify(DelegateTask delegateTask) {
+//
+//            }
+//        };
+//    }
+    @Bean
     public ProcessEngine intidataBase() {
         ProcessEngineConfiguration processEngineConfiguration = ProcessEngineConfiguration
                 .createStandaloneProcessEngineConfiguration();
@@ -41,26 +57,24 @@ public class ActivitityConfig {
          */
         processEngineConfiguration.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
         //工作流的核心对象，ProcessEnginee对象
-        processEngine = processEngineConfiguration.buildProcessEngine();
-
-
-        Deployment deployment = null;//完成部署
+        ProcessEngine processEngine = processEngineConfiguration.buildProcessEngine();
         try {
-            deployment = processEngine.getRepositoryService()//获取流程定义和部署对象相关的Service
+            //  第一步 部署流程
+            Deployment deployment = processEngine.getRepositoryService()//获取流程定义和部署对象相关的Service
                     .createDeployment()//创建部署对象
-                    .name("demo333")//声明流程的名称
-                    .addZipInputStream(new ZipInputStream(this.getClass().getClassLoader().getResourceAsStream("processes/creditApply.zip")))
-                    //.addClasspathResource(  new String("processes/creditApply.bpmn".getBytes("utf-8") ) )  //加载资源文件，一次只能加载一个文件
+                    .name("Panbb")//声明流程的名称
+                    //.addZipInputStream(new ZipInputStream(this.getClass().getClassLoader().getResourceAsStream("processes/creditApply.zip")))
+                    .addClasspathResource(  new String("processes/PlanB.bpmn".getBytes("utf-8") ) )  //加载资源文件，一次只能加载一个文件
                     .deploy();
-            //  .addClasspathResource(  new String("processes/demo2.bpmn".getBytes("utf-8") ) )  //加载资源文件，一次只能加载一个文件
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("部署ID：" + deployment.getId());//1
-        System.out.println("部署时间：" + deployment.getDeploymentTime());
-        log.info(" 流程部署完成.....");
+        return processEngine;
 
-        return   processEngine;
     }
+
+
+
+
 
 }

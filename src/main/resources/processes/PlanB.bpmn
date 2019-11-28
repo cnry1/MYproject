@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/credit-line">
+  <process id="PlanB" name="非方案项下" isExecutable="true">
+    <startEvent id="startevent2" name="Start"></startEvent>
+    <userTask id="BDApprove" name="BD审批"></userTask>
+    <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow164" sourceRef="exclusivegateway2" targetRef="BDApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${procInstCreateUserRole=="ROLE_COLLIE_BD"}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="BDLeaderApprove" name="BDleader审批"></userTask>
+    <sequenceFlow id="flow166" sourceRef="exclusivegateway2" targetRef="BDLeaderApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${procInstCreateUserRole=="ROLE_COLLIE_BDLeader"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow167" sourceRef="BDApprove" targetRef="BDLeaderApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus == 1}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="AssertApprove" name="资管审批">
+      <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${workFlow.getAssertUsers()}" activiti:elementVariable="user"></multiInstanceLoopCharacteristics>
+    </userTask>
+    <sequenceFlow id="flow168" sourceRef="BDLeaderApprove" targetRef="exclusivegateway3"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway3" name="是否是首次授信"></exclusiveGateway>
+    <userTask id="RMApprove" name="风控审批"></userTask>
+    <sequenceFlow id="flow169" sourceRef="exclusivegateway3" targetRef="AssertApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isFirstCredit==1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow170" sourceRef="exclusivegateway3" targetRef="RMApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isFirstCredit==0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow171" sourceRef="AssertApprove" targetRef="RMApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus==1}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="FMCCheckApprove" name="FMC综合复核"></userTask>
+    <exclusiveGateway id="exclusivegateway4" name="是否勾选FMC"></exclusiveGateway>
+    <sequenceFlow id="flow172" sourceRef="RMApprove" targetRef="FMCCheckApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus==1}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="ApprovePass" name="审批通过"></userTask>
+    <sequenceFlow id="flow174" sourceRef="exclusivegateway4" targetRef="ApprovePass">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isNeedFMC==0}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="FMCApprove" name="FMC审批">
+      <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${workFlow.getFMCUsers()}" activiti:elementVariable="user"></multiInstanceLoopCharacteristics>
+    </userTask>
+    <sequenceFlow id="flow175" sourceRef="exclusivegateway4" targetRef="FMCApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isNeedFMC==1}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="FMCOpinionCheckApprove" name="FMC意见整合"></userTask>
+    <sequenceFlow id="flow176" sourceRef="FMCApprove" targetRef="FMCOpinionCheckApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus==1}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="FMCLastApprove" name="FMC综合Leader"></userTask>
+    <sequenceFlow id="flow177" sourceRef="FMCOpinionCheckApprove" targetRef="FMCLastApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus==1}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="exclusivegateway5" name="是否选值CMC"></exclusiveGateway>
+    <sequenceFlow id="flow178" sourceRef="FMCLastApprove" targetRef="exclusivegateway5"></sequenceFlow>
+    <sequenceFlow id="flow179" sourceRef="exclusivegateway5" targetRef="ApprovePass">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isNeedCMC==0}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="CMCApprove" name="CMC综合"></userTask>
+    <sequenceFlow id="flow180" sourceRef="exclusivegateway5" targetRef="CMCApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isNeedCMC==1}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="CMCLastApprove" name="CMC综合leader"></userTask>
+    <sequenceFlow id="flow181" sourceRef="CMCApprove" targetRef="CMCLastApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus==1}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow182" sourceRef="CMCLastApprove" targetRef="ApprovePass">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approveStatus==1}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endevent" name="End"></endEvent>
+    <sequenceFlow id="flow183" sourceRef="ApprovePass" targetRef="endevent"></sequenceFlow>
+    <sequenceFlow id="flow184" sourceRef="startevent2" targetRef="exclusivegateway2"></sequenceFlow>
+    <sequenceFlow id="flow185" sourceRef="FMCCheckApprove" targetRef="exclusivegateway4"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_PlanB">
+    <bpmndi:BPMNPlane bpmnElement="PlanB" id="BPMNPlane_PlanB">
+      <bpmndi:BPMNShape bpmnElement="startevent2" id="BPMNShape_startevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="343.0" y="0.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="BDApprove" id="BPMNShape_BDApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="175.0" y="220.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="340.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="BDLeaderApprove" id="BPMNShape_BDLeaderApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="450.0" y="220.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="AssertApprove" id="BPMNShape_AssertApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="175.0" y="410.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway3" id="BPMNShape_exclusivegateway3">
+        <omgdc:Bounds height="40.0" width="40.0" x="340.0" y="320.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="RMApprove" id="BPMNShape_RMApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="450.0" y="410.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="FMCCheckApprove" id="BPMNShape_FMCCheckApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="680.0" y="410.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway4" id="BPMNShape_exclusivegateway4">
+        <omgdc:Bounds height="40.0" width="40.0" x="712.0" y="540.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ApprovePass" id="BPMNShape_ApprovePass">
+        <omgdc:Bounds height="55.0" width="105.0" x="680.0" y="630.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="FMCApprove" id="BPMNShape_FMCApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="175.0" y="533.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="FMCOpinionCheckApprove" id="BPMNShape_FMCOpinionCheckApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="175.0" y="630.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="FMCLastApprove" id="BPMNShape_FMCLastApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="175.0" y="730.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
+        <omgdc:Bounds height="40.0" width="40.0" x="380.0" y="637.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="CMCApprove" id="BPMNShape_CMCApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="450.0" y="790.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="CMCLastApprove" id="BPMNShape_CMCLastApprove">
+        <omgdc:Bounds height="55.0" width="105.0" x="680.0" y="790.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent" id="BPMNShape_endevent">
+        <omgdc:Bounds height="35.0" width="35.0" x="970.0" y="640.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow164" id="BPMNEdge_flow164">
+        <omgdi:waypoint x="340.0" y="110.0"></omgdi:waypoint>
+        <omgdi:waypoint x="227.0" y="110.0"></omgdi:waypoint>
+        <omgdi:waypoint x="227.0" y="220.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow166" id="BPMNEdge_flow166">
+        <omgdi:waypoint x="380.0" y="110.0"></omgdi:waypoint>
+        <omgdi:waypoint x="502.0" y="110.0"></omgdi:waypoint>
+        <omgdi:waypoint x="502.0" y="220.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow167" id="BPMNEdge_flow167">
+        <omgdi:waypoint x="280.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="450.0" y="247.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow168" id="BPMNEdge_flow168">
+        <omgdi:waypoint x="502.0" y="275.0"></omgdi:waypoint>
+        <omgdi:waypoint x="502.0" y="339.0"></omgdi:waypoint>
+        <omgdi:waypoint x="380.0" y="340.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow169" id="BPMNEdge_flow169">
+        <omgdi:waypoint x="340.0" y="340.0"></omgdi:waypoint>
+        <omgdi:waypoint x="227.0" y="340.0"></omgdi:waypoint>
+        <omgdi:waypoint x="227.0" y="410.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow170" id="BPMNEdge_flow170">
+        <omgdi:waypoint x="360.0" y="360.0"></omgdi:waypoint>
+        <omgdi:waypoint x="360.0" y="437.0"></omgdi:waypoint>
+        <omgdi:waypoint x="450.0" y="437.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow171" id="BPMNEdge_flow171">
+        <omgdi:waypoint x="280.0" y="437.0"></omgdi:waypoint>
+        <omgdi:waypoint x="450.0" y="437.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow172" id="BPMNEdge_flow172">
+        <omgdi:waypoint x="555.0" y="437.0"></omgdi:waypoint>
+        <omgdi:waypoint x="680.0" y="437.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow174" id="BPMNEdge_flow174">
+        <omgdi:waypoint x="732.0" y="580.0"></omgdi:waypoint>
+        <omgdi:waypoint x="732.0" y="630.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow175" id="BPMNEdge_flow175">
+        <omgdi:waypoint x="712.0" y="560.0"></omgdi:waypoint>
+        <omgdi:waypoint x="280.0" y="560.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow176" id="BPMNEdge_flow176">
+        <omgdi:waypoint x="227.0" y="588.0"></omgdi:waypoint>
+        <omgdi:waypoint x="227.0" y="630.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow177" id="BPMNEdge_flow177">
+        <omgdi:waypoint x="227.0" y="685.0"></omgdi:waypoint>
+        <omgdi:waypoint x="227.0" y="730.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow178" id="BPMNEdge_flow178">
+        <omgdi:waypoint x="280.0" y="757.0"></omgdi:waypoint>
+        <omgdi:waypoint x="400.0" y="757.0"></omgdi:waypoint>
+        <omgdi:waypoint x="400.0" y="677.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow179" id="BPMNEdge_flow179">
+        <omgdi:waypoint x="420.0" y="657.0"></omgdi:waypoint>
+        <omgdi:waypoint x="680.0" y="657.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow180" id="BPMNEdge_flow180">
+        <omgdi:waypoint x="400.0" y="677.0"></omgdi:waypoint>
+        <omgdi:waypoint x="400.0" y="817.0"></omgdi:waypoint>
+        <omgdi:waypoint x="450.0" y="817.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow181" id="BPMNEdge_flow181">
+        <omgdi:waypoint x="555.0" y="817.0"></omgdi:waypoint>
+        <omgdi:waypoint x="680.0" y="817.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow182" id="BPMNEdge_flow182">
+        <omgdi:waypoint x="732.0" y="790.0"></omgdi:waypoint>
+        <omgdi:waypoint x="732.0" y="685.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow183" id="BPMNEdge_flow183">
+        <omgdi:waypoint x="785.0" y="657.0"></omgdi:waypoint>
+        <omgdi:waypoint x="970.0" y="657.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow184" id="BPMNEdge_flow184">
+        <omgdi:waypoint x="360.0" y="35.0"></omgdi:waypoint>
+        <omgdi:waypoint x="360.0" y="90.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow185" id="BPMNEdge_flow185">
+        <omgdi:waypoint x="732.0" y="465.0"></omgdi:waypoint>
+        <omgdi:waypoint x="732.0" y="540.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
