@@ -1,10 +1,7 @@
 package com.glp;
 
-import com.glp.utils.ActivitityConfig;
 import com.glp.utils.SpringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.spring.boot.SecurityAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +20,6 @@ import org.springframework.context.annotation.Import;
 @Import(SpringUtils.class)
 public class Application {
     public static void main(String[] args) {
-
         SpringApplication.run(Application.class,args);
         log.info("服务启动。。。。");
     }

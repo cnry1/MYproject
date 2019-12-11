@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class Demo {
     @Autowired
     ActivityLogic activityLogic;
-//    @Autowired
+
+    //    @Autowired
 //    RuntimeService runtimeService;
     @RequestMapping(path = "/test1", method = RequestMethod.GET)
     public void test1() {
 
-
-        activityLogic.submit();
+ activityLogic.submit();
     }
 }
