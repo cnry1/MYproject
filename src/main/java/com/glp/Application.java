@@ -21,6 +21,6 @@ import org.springframework.context.annotation.Import;
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class,args);
-        log.info("服务启动。。。。");
+        log.info("服务启动......");
     }
 }
